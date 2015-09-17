@@ -17,27 +17,66 @@ RSpec.describe TodosController, type: :controller do
   describe 'GET: /todos' do
     it "returns the title" do
       get :index
-      ap todo_json
-      expect(todo_json["todos"].length).to eq 5
-
+      expect(todo_json["todos"].first["title"]).to eq "Todo 0" 
     end
-    it "returns five todos" 
+
+    it "returns five todos"  do
+      get :index
+      expect(todo_json["todos"].length).to eq 5
+    end
       
-      
-    it "returns the is_completed"
+    it "returns the is_completed" do
+      get :index
+      expect(todo_json["todos"].first["is_completed"]).to eq false 
+    end
   end
 
   describe 'PUT: /todos/:id' do
-    it "will let you update the title"
-    it "will let you change is_completed"
+    let(:json) {
+      {
+        "title" => "Profit!",
+        "is_completed" => true
+      }
+    }
+
+    it "will let you update the title" do
+      expect{
+        put :update, id: subject.id, todo: json
+      }.to change{ subject.reload.title }
+      expect(todo_json['todo']).to eq json.merge({'id' => subject.id})
+    end
+
+    it "will let you change is_completed" do
+      expect{
+        put :update, id: subject.id, todo: json
+      }.to change{ subject.reload.is_completed }
+      expect(todo_json['todo']).to eq json.merge({'id' => subject.id})
+    end
   end
 
   describe 'POST: /todos' do
-    it "will let you set the title"
-    it "will default the is_completed to false"
+    let(:json) {
+      {
+        "title" => "Test 2",
+        "is_completed" => false
+      }
+    }
+
+    it "will create a new todo" do
+      expect{
+        post :create, todo: json
+      }.to change{ Todo.count }.by(1)
+      expect(todo_json['todo']['title']).to eq json['title']
+      expect(todo_json['todo']['is_completed']).to eq json['is_completed']
+    end
+
   end
 
   describe 'DELETE: /todos/:id' do
-    it "will delete the todo with a given id"
+    it "will delete the todo with a given id" do
+      expect{
+        delete :destroy, id: Todo.first
+      }.to change{ Todo.count }.by(-1)
+    end
   end
 end
